@@ -311,6 +311,7 @@ namespace Survival.UI
             GUILayout.Space(14f);
             GUILayout.Label("Nhân vật 3D:", GuiDrawUtils.MutedLabelStyle);
             string currentChar = PlayerPrefs.GetString("SB_CHAR_MODEL", "George");
+            int currentSkin = PlayerPrefs.GetInt("SB_CHAR_SKIN", 0);
             GUILayout.BeginHorizontal();
             for (int c = 0; c < ModelCatalog.CharacterNames.Length; c++)
             {
@@ -319,6 +320,24 @@ namespace Survival.UI
                 {
                     PlayerPrefs.SetString("SB_CHAR_MODEL", cName);
                     PlayerPrefs.Save();
+                    if (MatchManager.Instance != null)
+                        MatchManager.Instance.RefreshLobbyHeroCharacter(cName, currentSkin);
+                }
+            }
+            GUILayout.EndHorizontal();
+
+            GUILayout.Space(6f);
+            GUILayout.Label("Trang phục / Màu áo:", GuiDrawUtils.MutedLabelStyle);
+            GUILayout.BeginHorizontal();
+            for (int s = 0; s <= 4; s++)
+            {
+                string sLabel = s == 0 ? "GỐC" : "SKIN " + s;
+                if (GuiDrawUtils.DrawTabButton(sLabel, currentSkin == s, (rightCard.width - 48f) * 0.20f, 24f))
+                {
+                    PlayerPrefs.SetInt("SB_CHAR_SKIN", s);
+                    PlayerPrefs.Save();
+                    if (MatchManager.Instance != null)
+                        MatchManager.Instance.RefreshLobbyHeroCharacter(currentChar, s);
                 }
             }
             GUILayout.EndHorizontal();

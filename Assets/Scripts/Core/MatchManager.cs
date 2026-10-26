@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Survival.Backend;
 using Survival.Combat;
+using Survival.Items;
 using Survival.Player;
 using Survival.World;
 using UnityEngine;
@@ -59,6 +60,9 @@ namespace Survival.Core
 
         private Transform activeMatchActorsRoot;
         private Transform activeIslandRoot;
+        private GameObject lobbyStageRoot;
+        private CharacterVisualHandles lobbyHeroVisuals;
+        private readonly CharacterAnimationDriver lobbyAnimDriver = new CharacterAnimationDriver();
         private bool matchEnded = false;
 
         private static readonly string[] BotNames =
@@ -71,7 +75,7 @@ namespace Survival.Core
 
         private void Awake()
         {
-            if (Instance != null && Instance != this)
+            if (instance != null && instance != this)
             {
                 Destroy(gameObject);
                 return;
@@ -89,6 +93,8 @@ namespace Survival.Core
             {
                 activeIslandRoot = BattleRoyaleMapGenerator.Instance.RebuildWorld(2026);
             }
+
+            SetupLobbyHeroStage();
             PositionLobbyCamera();
         }
 
@@ -106,6 +112,7 @@ namespace Survival.Core
             }
             else if (CurrentState == GameFlowState.AuthScreen || CurrentState == GameFlowState.MainMenuLobby)
             {
+                lobbyAnimDriver.UpdateLocomotion(0f, false, true, Time.deltaTime);
                 AnimateLobbyCamera();
             }
         }
@@ -114,6 +121,20 @@ namespace Survival.Core
         {
             if (CurrentState == nextState) return;
             CurrentState = nextState;
+
+            if (nextState == GameFlowState.InMatch)
+            {
+                if (lobbyStageRoot != null)
+                    lobbyStageRoot.SetActive(false);
+            }
+            else
+            {
+                if (lobbyStageRoot == null)
+                    SetupLobbyHeroStage();
+                else
+                    lobbyStageRoot.SetActive(true);
+            }
+
             GameEvents.RaiseGameStateChanged(nextState);
         }
 
@@ -127,16 +148,20 @@ namespace Survival.Core
 
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
+
             SetGameState((SupabaseManager.Instance != null && SupabaseManager.Instance.IsLoggedIn)
                 ? GameFlowState.MainMenuLobby
                 : GameFlowState.AuthScreen);
 
+            SetupLobbyHeroStage();
             PositionLobbyCamera();
         }
 
         public void StartBattleRoyaleMatch(int totalPlayers = 10, string modeLabel = "online_10p")
         {
             CleanupMatchActors();
+            if (lobbyStageRoot != null)
+                lobbyStageRoot.SetActive(false);
 
             TotalParticipants = Mathf.Clamp(totalPlayers, 4, 20);
             SelectedGameMode = string.IsNullOrEmpty(modeLabel) ? "online_10p" : modeLabel;
@@ -350,14 +375,94 @@ namespace Survival.Core
             }
         }
 
+        public void SetupLobbyHeroStage()
+        {
+            if (lobbyStageRoot != null)
+                MaterialPool.SafeDestroy(lobbyStageRoot);
+
+            lobbyStageRoot = new GameObject("LobbyHeroStage");
+
+            // Bục đứng chiến thuật hình bát giác / khối kim loại
+            MaterialPool.CreatePrimitive(
+                PrimitiveType.Cylinder,
+                lobbyStageRoot.transform,
+                "Pedestal",
+                new Vector3(0f, 0.05f, 0f),
+                new Vector3(2.6f, 0.1f, 2.6f),
+                new Color(0.18f, 0.22f, 0.26f),
+                false);
+
+            MaterialPool.CreatePrimitive(
+                PrimitiveType.Cylinder,
+                lobbyStageRoot.transform,
+                "PedestalRing",
+                new Vector3(0f, 0.11f, 0f),
+                new Vector3(2.4f, 0.02f, 2.4f),
+                new Color(0.95f, 0.75f, 0.20f),
+                false);
+
+            // Đèn chiếu Spotlight rọi thẳng vào nhân vật (như trong PUBG / Free Fire)
+            GameObject spotGo = new GameObject("HeroSpotlight");
+            spotGo.transform.SetParent(lobbyStageRoot.transform, false);
+            spotGo.transform.position = new Vector3(0.5f, 3.8f, -2.4f);
+            spotGo.transform.LookAt(new Vector3(0f, 1.1f, 0f));
+            Light spot = spotGo.AddComponent<Light>();
+            spot.type = LightType.Spot;
+            spot.range = 8.5f;
+            spot.spotAngle = 45f;
+            spot.intensity = 2.4f;
+            spot.color = new Color(1f, 0.98f, 0.92f);
+
+            // Spawn nhân vật mặc định
+            string savedChar = PlayerPrefs.GetString("SB_CHAR_MODEL", "George");
+            int savedSkin = PlayerPrefs.GetInt("SB_CHAR_SKIN", 0);
+            RefreshLobbyHeroCharacter(savedChar, savedSkin);
+        }
+
+        public void RefreshLobbyHeroCharacter(string characterName, int skinIndex)
+        {
+            if (lobbyStageRoot == null) return;
+
+            Transform existing = lobbyStageRoot.transform.Find("HeroModel");
+            if (existing != null)
+                MaterialPool.SafeDestroy(existing.gameObject);
+
+            GameObject heroHolder = new GameObject("HeroModel");
+            heroHolder.transform.SetParent(lobbyStageRoot.transform, false);
+            heroHolder.transform.localPosition = new Vector3(0f, 0.12f, 0f);
+            heroHolder.transform.localRotation = Quaternion.Euler(0f, 15f, 0f);
+
+            lobbyHeroVisuals = CharacterVisualBuilder.BuildPlayerVisuals(
+                heroHolder.transform,
+                WeaponId.M416,
+                characterName,
+                skinIndex);
+
+            // Ẩn dù, hiện giáp mũ lv2 chiến thuật
+            if (lobbyHeroVisuals.parachuteVisual != null)
+                lobbyHeroVisuals.parachuteVisual.SetActive(false);
+            if (lobbyHeroVisuals.helmetVisual != null)
+            {
+                lobbyHeroVisuals.helmetVisual.SetActive(true);
+                MaterialPool.ApplyLitColor(lobbyHeroVisuals.helmetRenderer, LootItem.GetTierColor(2));
+            }
+            if (lobbyHeroVisuals.vestVisual != null)
+            {
+                lobbyHeroVisuals.vestVisual.SetActive(true);
+                MaterialPool.ApplyLitColor(lobbyHeroVisuals.vestRenderer, LootItem.GetTierColor(2));
+            }
+
+            lobbyAnimDriver.Initialize(lobbyHeroVisuals.legacyAnimation);
+        }
+
         private void PositionLobbyCamera()
         {
             Camera cam = Camera.main;
             if (cam != null)
             {
-                cam.fieldOfView = 55f;
-                cam.transform.position = new Vector3(0f, 38f, -65f);
-                cam.transform.LookAt(new Vector3(0f, 4f, 0f));
+                cam.fieldOfView = 48f;
+                cam.transform.position = new Vector3(0.35f, 1.25f, -2.85f);
+                cam.transform.LookAt(new Vector3(0f, 1.15f, 0f));
             }
         }
 
@@ -366,10 +471,12 @@ namespace Survival.Core
             Camera cam = Camera.main;
             if (cam == null) return;
 
-            float angle = Time.time * 0.12f;
-            Vector3 orbitPos = new Vector3(Mathf.Sin(angle) * 72f, 32f, Mathf.Cos(angle) * 72f);
-            cam.transform.position = orbitPos;
-            cam.transform.LookAt(new Vector3(0f, 3f, 0f));
+            // Camera thở nhẹ nhàng (Subtle breathing sway) chuẩn điện ảnh AAA
+            float t = Time.time * 0.8f;
+            float swayX = 0.35f + Mathf.Sin(t) * 0.05f;
+            float swayY = 1.25f + Mathf.Cos(t * 1.2f) * 0.025f;
+            cam.transform.position = new Vector3(swayX, swayY, -2.85f);
+            cam.transform.LookAt(new Vector3(0f, 1.12f + Mathf.Sin(t * 0.5f) * 0.015f, 0f));
         }
     }
 }

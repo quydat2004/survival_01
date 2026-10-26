@@ -24,68 +24,88 @@ namespace Survival.World
             Color floorColor = new Color(0.44f, 0.36f, 0.28f);
             Color roofColor = new Color(0.36f, 0.22f, 0.16f);
 
-            // Tầng 1: Sàn
+            // ================= TẦNG 1 =================
+            // Sàn Tầng 1
             CreateBox(houseRoot.transform, "Floor1", new Vector3(0f, 0.1f, 0f), new Vector3(12.4f, 0.2f, 10.4f), floorColor);
 
-            // Tường sau kín
+            // Tường sau
             CreateBox(houseRoot.transform, "Wall_Back_F1", new Vector3(0f, 1.8f, 5.0f), new Vector3(12.4f, 3.4f, 0.4f), wallColor);
 
             // Tường trái có cửa sổ ngắm bắn
             CreateBox(houseRoot.transform, "Wall_Left_Bottom", new Vector3(-6.0f, 0.6f, 0f), new Vector3(0.4f, 1.0f, 10.4f), wallColor);
             CreateBox(houseRoot.transform, "Wall_Left_Top", new Vector3(-6.0f, 3.0f, 0f), new Vector3(0.4f, 1.0f, 10.4f), wallColor);
-            CreateBox(houseRoot.transform, "Wall_Left_Pillar1", new Vector3(-6.0f, 1.8f, -3.2f), new Vector3(0.4f, 1.4f, 4.0f), wallColor);
-            CreateBox(houseRoot.transform, "Wall_Left_Pillar2", new Vector3(-6.0f, 1.8f, 3.2f), new Vector3(0.4f, 1.4f, 4.0f), wallColor);
+            CreateBox(houseRoot.transform, "Wall_Left_P1", new Vector3(-6.0f, 1.8f, -3.2f), new Vector3(0.4f, 1.4f, 4.0f), wallColor);
+            CreateBox(houseRoot.transform, "Wall_Left_P2", new Vector3(-6.0f, 1.8f, 3.2f), new Vector3(0.4f, 1.4f, 4.0f), wallColor);
 
-            // Tường phải có cửa sổ ngắm bắn
-            CreateBox(houseRoot.transform, "Wall_Right_Bottom", new Vector3(6.0f, 0.6f, 0f), new Vector3(0.4f, 1.0f, 10.4f), wallColor);
-            CreateBox(houseRoot.transform, "Wall_Right_Top", new Vector3(6.0f, 3.0f, 0f), new Vector3(0.4f, 1.0f, 10.4f), wallColor);
-            CreateBox(houseRoot.transform, "Wall_Right_Pillar1", new Vector3(6.0f, 1.8f, -3.2f), new Vector3(0.4f, 1.4f, 4.0f), wallColor);
-            CreateBox(houseRoot.transform, "Wall_Right_Pillar2", new Vector3(6.0f, 1.8f, 3.2f), new Vector3(0.4f, 1.4f, 4.0f), wallColor);
+            // Tường phải (ôm sát bên ngoài cầu thang)
+            CreateBox(houseRoot.transform, "Wall_Right_F1", new Vector3(6.0f, 1.8f, 0f), new Vector3(0.4f, 3.4f, 10.4f), wallColor);
 
-            // Tường trước: Cửa chính mở rộng 2.4m, cao 2.6m
-            CreateBox(houseRoot.transform, "Wall_Front_Left", new Vector3(-3.8f, 1.8f, -5.0f), new Vector3(4.8f, 3.4f, 0.4f), wallColor);
-            CreateBox(houseRoot.transform, "Wall_Front_Right", new Vector3(3.8f, 1.8f, -5.0f), new Vector3(4.8f, 3.4f, 0.4f), wallColor);
+            // Tường trước: Cửa chính rộng 2.4m, cao 2.6m
+            CreateBox(houseRoot.transform, "Wall_Front_L", new Vector3(-3.8f, 1.8f, -5.0f), new Vector3(4.8f, 3.4f, 0.4f), wallColor);
+            CreateBox(houseRoot.transform, "Wall_Front_R", new Vector3(3.8f, 1.8f, -5.0f), new Vector3(4.8f, 3.4f, 0.4f), wallColor);
             CreateBox(houseRoot.transform, "Wall_Front_Header", new Vector3(0f, 3.0f, -5.0f), new Vector3(2.8f, 1.0f, 0.4f), trimColor);
 
-            // Sàn Tầng 2 có chừa giếng thang (Stairwell opening)
-            CreateBox(houseRoot.transform, "Floor2_Main", new Vector3(-1.8f, 3.6f, 0f), new Vector3(8.8f, 0.25f, 10.4f), floorColor);
-            CreateBox(houseRoot.transform, "Floor2_Edge", new Vector3(4.4f, 3.6f, -3.2f), new Vector3(3.6f, 0.25f, 4.0f), floorColor);
+            // ================= CẦU THANG TẦNG 1 LÊN TẦNG 2 =================
+            // Dốc thoải 28 độ dọc tường phải từ Z = -3.4m đến Z = 2.6m (dài 6.0m, leo từ Y=0.2m lên Y=3.55m)
+            // Headroom trên cầu thang hoàn toàn mở thông lên tầng 2 (không có sàn hay dốc nóc đè lên)
+            GameObject stairs = CreateBox(houseRoot.transform, "StairRamp_F1_F2", new Vector3(4.6f, 1.88f, -0.4f), new Vector3(2.4f, 0.2f, 6.8f), floorColor);
+            stairs.transform.localRotation = Quaternion.Euler(-29f, 0f, 0f);
 
-            // Cầu thang thoải đi từ Tầng 1 lên Tầng 2
-            GameObject stairs = CreateBox(houseRoot.transform, "StairRamp_F1_F2", new Vector3(4.3f, 1.8f, 0.9f), new Vector3(2.2f, 0.2f, 5.4f), floorColor);
-            stairs.transform.localRotation = Quaternion.Euler(-34f, 0f, 0f);
+            // Lan can bảo vệ bên trong cầu thang tầng 1
+            CreateBox(houseRoot.transform, "StairHandrail_F1", new Vector3(3.35f, 2.3f, -0.4f), new Vector3(0.12f, 0.85f, 6.6f), trimColor);
 
-            // Tầng 2: Lan can & Tường ngắm bắn
-            CreateBox(houseRoot.transform, "Wall_F2_Back", new Vector3(0f, 5.2f, 5.0f), new Vector3(12.4f, 3.0f, 0.4f), wallColor);
-            CreateBox(houseRoot.transform, "Wall_F2_Left", new Vector3(-6.0f, 5.2f, 0f), new Vector3(0.4f, 3.0f, 10.4f), wallColor);
-            CreateBox(houseRoot.transform, "Wall_F2_Right", new Vector3(6.0f, 5.2f, 0f), new Vector3(0.4f, 3.0f, 10.4f), wallColor);
+            // ================= SÀN TẦNG 2 =================
+            // Sàn Tầng 2 phủ phần lớn nhà, chừa giếng thang ở phía phải (X: 3.3 -> 6.0, Z: -4.8 -> 2.6)
+            CreateBox(houseRoot.transform, "Floor2_LeftWing", new Vector3(-1.8f, 3.55f, 0f), new Vector3(8.8f, 0.25f, 10.4f), floorColor);
+            CreateBox(houseRoot.transform, "Floor2_LandingBack", new Vector3(4.6f, 3.55f, 3.8f), new Vector3(4.0f, 0.25f, 2.8f), floorColor);
 
-            // Ban công & Cửa sổ tầng 2 nhìn ra sân trước
-            CreateBox(houseRoot.transform, "Wall_F2_Front_L", new Vector3(-3.8f, 5.2f, -5.0f), new Vector3(4.8f, 3.0f, 0.4f), wallColor);
-            CreateBox(houseRoot.transform, "Wall_F2_Front_R", new Vector3(3.8f, 5.2f, -5.0f), new Vector3(4.8f, 3.0f, 0.4f), wallColor);
-            CreateBox(houseRoot.transform, "Wall_F2_Front_Railing", new Vector3(0f, 4.3f, -5.0f), new Vector3(2.8f, 1.2f, 0.2f), trimColor);
+            // Lan can bảo vệ mép giếng thang tầng 2 (người chơi không bị rơi ngược xuống)
+            CreateBox(houseRoot.transform, "F2_WellRailing_Side", new Vector3(2.55f, 4.1f, -1.0f), new Vector3(0.12f, 0.9f, 7.6f), trimColor);
+            CreateBox(houseRoot.transform, "F2_WellRailing_End", new Vector3(4.5f, 4.1f, -4.8f), new Vector3(3.8f, 0.9f, 0.12f), trimColor);
 
-            // Mái nhà che mưa có chừa lối lên nóc
-            CreateBox(houseRoot.transform, "Roof_Slab", new Vector3(-1.4f, 6.8f, 0f), new Vector3(9.6f, 0.3f, 10.8f), roofColor);
-            GameObject roofRamp = CreateBox(houseRoot.transform, "RoofAccessRamp", new Vector3(4.3f, 5.2f, 1.0f), new Vector3(2.2f, 0.2f, 5.4f), floorColor);
-            roofRamp.transform.localRotation = Quaternion.Euler(-34f, 0f, 0f);
+            // ================= TƯỜNG TẦNG 2 =================
+            CreateBox(houseRoot.transform, "Wall_Back_F2", new Vector3(0f, 5.2f, 5.0f), new Vector3(12.4f, 3.0f, 0.4f), wallColor);
+            CreateBox(houseRoot.transform, "Wall_Left_F2", new Vector3(-6.0f, 5.2f, 0f), new Vector3(0.4f, 3.0f, 10.4f), wallColor);
+            CreateBox(houseRoot.transform, "Wall_Right_F2", new Vector3(6.0f, 5.2f, 0f), new Vector3(0.4f, 3.0f, 10.4f), wallColor);
 
-            // Lan can sân thượng bắn tỉa (Sniper parapet)
-            CreateBox(houseRoot.transform, "Roof_Parapet_Front", new Vector3(0f, 7.3f, -5.3f), new Vector3(12.6f, 0.9f, 0.3f), trimColor);
-            CreateBox(houseRoot.transform, "Roof_Parapet_Back", new Vector3(0f, 7.3f, 5.3f), new Vector3(12.6f, 0.9f, 0.3f), trimColor);
+            // Mặt trước tầng 2: Ban công ngắm bắn có cửa đi ra
+            CreateBox(houseRoot.transform, "Wall_Front_F2_L", new Vector3(-3.8f, 5.2f, -5.0f), new Vector3(4.8f, 3.0f, 0.4f), wallColor);
+            CreateBox(houseRoot.transform, "Wall_Front_F2_R", new Vector3(3.8f, 5.2f, -5.0f), new Vector3(4.8f, 3.0f, 0.4f), wallColor);
+            CreateBox(houseRoot.transform, "Balcony_Railing", new Vector3(0f, 4.3f, -5.0f), new Vector3(2.8f, 1.2f, 0.15f), trimColor);
 
+            // ================= CẦU THANG TẦNG 2 LÊN MÁI (ĐẶT Ở GÓC TRÁI, TÁCH BIỆT) =================
+            GameObject roofStairs = CreateBox(houseRoot.transform, "StairRamp_F2_Roof", new Vector3(-4.6f, 5.2f, -0.4f), new Vector3(2.4f, 0.2f, 6.8f), floorColor);
+            roofStairs.transform.localRotation = Quaternion.Euler(-29f, 0f, 0f);
+
+            // ================= MÁI NHÀ VÀ SÂN THƯỢNG (ROOFTOP SNIPER DECK) =================
+            // Sàn mái che phủ phần lớn, chừa ô cửa lên mái ở bên trái
+            CreateBox(houseRoot.transform, "Roof_MainSlab", new Vector3(1.8f, 6.9f, 0f), new Vector3(8.8f, 0.25f, 10.4f), roofColor);
+            CreateBox(houseRoot.transform, "Roof_LandingBack", new Vector3(-4.6f, 6.9f, 3.8f), new Vector3(4.0f, 0.25f, 2.8f), roofColor);
+
+            // Lan can bảo vệ sân thượng ngắm bắn
+            CreateBox(houseRoot.transform, "Roof_Parapet_Front", new Vector3(0f, 7.4f, -5.2f), new Vector3(12.6f, 0.9f, 0.25f), trimColor);
+            CreateBox(houseRoot.transform, "Roof_Parapet_Back", new Vector3(0f, 7.4f, 5.2f), new Vector3(12.6f, 0.9f, 0.25f), trimColor);
+            CreateBox(houseRoot.transform, "Roof_Parapet_L", new Vector3(-6.2f, 7.4f, 0f), new Vector3(0.25f, 0.9f, 10.6f), trimColor);
+            CreateBox(houseRoot.transform, "Roof_Parapet_R", new Vector3(6.2f, 7.4f, 0f), new Vector3(0.25f, 0.9f, 10.6f), trimColor);
+
+            // ================= VẬT PHẨM NỘI THẤT (LOOT) =================
             if (spawnInternalLoot)
             {
                 Vector3 rotVec(Vector3 local) => worldPos + (Quaternion.Euler(0f, yRotation, 0f) * local);
+
+                // Tầng 1: Góc phòng khách
                 LootItem.SpawnLoot(rotVec(new Vector3(-3.2f, 0.25f, 1.8f)), LootCategory.Weapon, WeaponId.M416, 60, 2, parent);
                 LootItem.SpawnLoot(rotVec(new Vector3(-3.2f, 0.25f, -2.4f)), LootCategory.Ammo, WeaponId.M416, 60, 1, parent);
-                LootItem.SpawnLoot(rotVec(new Vector3(1.4f, 0.25f, 3.0f)), LootCategory.Medkit, WeaponId.M416, 1, 2, parent);
+                LootItem.SpawnLoot(rotVec(new Vector3(0f, 0.25f, 2.5f)), LootCategory.Medkit, WeaponId.M416, 1, 2, parent);
 
-                LootItem.SpawnLoot(rotVec(new Vector3(-3.0f, 3.85f, 2.0f)), LootCategory.Weapon, WeaponId.AKM, 60, 2, parent);
-                LootItem.SpawnLoot(rotVec(new Vector3(0f, 3.85f, -2.8f)), LootCategory.ArmorVest, WeaponId.M416, 1, 2, parent);
-                LootItem.SpawnLoot(rotVec(new Vector3(-3.5f, 3.85f, -2.5f)), LootCategory.Helmet, WeaponId.M416, 1, 2, parent);
+                // Tầng 2: Phòng ngủ / Phòng ngắm bắn
+                LootItem.SpawnLoot(rotVec(new Vector3(-2.2f, 3.85f, 2.2f)), LootCategory.Weapon, WeaponId.AKM, 60, 2, parent);
+                LootItem.SpawnLoot(rotVec(new Vector3(0f, 3.85f, -2.5f)), LootCategory.ArmorVest, WeaponId.M416, 1, 2, parent);
+                LootItem.SpawnLoot(rotVec(new Vector3(-2.2f, 3.85f, -2.5f)), LootCategory.Helmet, WeaponId.M416, 1, 2, parent);
 
-                LootItem.SpawnLoot(rotVec(new Vector3(0f, 7.1f, 0f)), LootCategory.Weapon, WeaponId.Kar98k, 25, 3, parent);
+                // Sân thượng: Súng bắn tỉa Kar98k
+                LootItem.SpawnLoot(rotVec(new Vector3(1.5f, 7.15f, 0f)), LootCategory.Weapon, WeaponId.Kar98k, 25, 3, parent);
+                LootItem.SpawnLoot(rotVec(new Vector3(1.5f, 7.15f, 2.0f)), LootCategory.Ammo, WeaponId.Kar98k, 30, 2, parent);
             }
 
             return houseRoot;
@@ -120,23 +140,23 @@ namespace Survival.World
             // Hai tường bên có cửa sổ ngắm bắn
             CreateBox(house.transform, "Wall_Left_Bottom", new Vector3(-5.2f, 0.6f, 0f), new Vector3(0.4f, 1.0f, 8.8f), wallColor);
             CreateBox(house.transform, "Wall_Left_Top", new Vector3(-5.2f, 2.8f, 0f), new Vector3(0.4f, 1.0f, 8.8f), wallColor);
-            CreateBox(house.transform, "Wall_Left_Pillar1", new Vector3(-5.2f, 1.7f, -2.6f), new Vector3(0.4f, 1.2f, 3.6f), wallColor);
-            CreateBox(house.transform, "Wall_Left_Pillar2", new Vector3(-5.2f, 1.7f, 2.6f), new Vector3(0.4f, 1.2f, 3.6f), wallColor);
+            CreateBox(house.transform, "Wall_Left_P1", new Vector3(-5.2f, 1.7f, -2.6f), new Vector3(0.4f, 1.2f, 3.6f), wallColor);
+            CreateBox(house.transform, "Wall_Left_P2", new Vector3(-5.2f, 1.7f, 2.6f), new Vector3(0.4f, 1.2f, 3.6f), wallColor);
 
             CreateBox(house.transform, "Wall_Right_Bottom", new Vector3(5.2f, 0.6f, 0f), new Vector3(0.4f, 1.0f, 8.8f), wallColor);
             CreateBox(house.transform, "Wall_Right_Top", new Vector3(5.2f, 2.8f, 0f), new Vector3(0.4f, 1.0f, 8.8f), wallColor);
-            CreateBox(house.transform, "Wall_Right_Pillar1", new Vector3(5.2f, 1.7f, -2.6f), new Vector3(0.4f, 1.2f, 3.6f), wallColor);
-            CreateBox(house.transform, "Wall_Right_Pillar2", new Vector3(5.2f, 1.7f, 2.6f), new Vector3(0.4f, 1.2f, 3.6f), wallColor);
+            CreateBox(house.transform, "Wall_Right_P1", new Vector3(5.2f, 1.7f, -2.6f), new Vector3(0.4f, 1.2f, 3.6f), wallColor);
+            CreateBox(house.transform, "Wall_Right_P2", new Vector3(5.2f, 1.7f, 2.6f), new Vector3(0.4f, 1.2f, 3.6f), wallColor);
 
-            // Tường trước: Cửa chính mở rộng 2.2m
+            // Tường trước: Cửa chính mở rộng 2.4m
             CreateBox(house.transform, "Wall_Front_Left", new Vector3(-3.4f, 1.7f, -4.2f), new Vector3(4.0f, 3.2f, 0.4f), wallColor);
             CreateBox(house.transform, "Wall_Front_Right", new Vector3(3.4f, 1.7f, -4.2f), new Vector3(4.0f, 3.2f, 0.4f), wallColor);
             CreateBox(house.transform, "Wall_Front_Header", new Vector3(0f, 2.8f, -4.2f), new Vector3(2.8f, 1.0f, 0.4f), wallColor);
 
             // Mái che và cầu thang bên ngoài leo lên nóc nhà bắn tỉa
             CreateBox(house.transform, "Roof", new Vector3(0f, 3.4f, 0f), new Vector3(11.4f, 0.25f, 9.4f), roofColor);
-            GameObject sideStairs = CreateBox(house.transform, "OutsideStairs", new Vector3(6.5f, 1.7f, 0f), new Vector3(1.8f, 0.2f, 6.2f), floorColor);
-            sideStairs.transform.localRotation = Quaternion.Euler(-28f, 0f, 0f);
+            GameObject sideStairs = CreateBox(house.transform, "OutsideStairs", new Vector3(6.5f, 1.7f, 0f), new Vector3(2.2f, 0.2f, 6.4f), floorColor);
+            sideStairs.transform.localRotation = Quaternion.Euler(-27f, 0f, 0f);
 
             if (spawnInternalLoot)
             {

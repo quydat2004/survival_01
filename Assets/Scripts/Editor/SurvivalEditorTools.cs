@@ -142,7 +142,7 @@ namespace Survival.Editor
                 1f);
             AssertTrue(targetBot.currentHealth < hpBefore, "Bot should take ballistic damage from AWM shot");
 
-            // 7. Test Tree/Rock Colliders & Enterable House Doorway/Interior
+            // 7. Test Tree/Rock Colliders & Enterable House Stairs Climb to Floor 2
             GameObject testTree = ModelCatalog.SpawnNatureModel(null, "Pine_1", new Vector3(0f, 0f, 30f), 0f, 1.2f, true, false, true);
             AssertNotNull(testTree, "Spawned Pine_1");
             CapsuleCollider treeCol = testTree.GetComponent<CapsuleCollider>();
@@ -155,24 +155,54 @@ namespace Survival.Editor
             AssertNotNull(rockCol, "Rock should have SphereCollider");
             AssertTrue(!rockCol.isTrigger, "Rock collider must be solid");
 
-            GameObject testHouse = EnterableStructureBuilder.BuildTwoStoryTacticalHouse(null, new Vector3(0f, 0f, 50f), 0f, Color.gray, Color.black, true);
+            GameObject testHouse = EnterableStructureBuilder.BuildTwoStoryTacticalHouse(null, new Vector3(0f, 0f, 60f), 0f, Color.gray, Color.black, true);
             AssertNotNull(testHouse, "Spawned Enterable 2-Story Tactical House");
             Transform floor1 = testHouse.transform.Find("Floor1");
             AssertNotNull(floor1, "House Floor1 exists");
+            Transform floor2 = testHouse.transform.Find("Floor2_LandingBack");
+            AssertNotNull(floor2, "House Floor2 exists");
             Transform stairs = testHouse.transform.Find("StairRamp_F1_F2");
             AssertNotNull(stairs, "House Stairs to 2nd Floor exists");
 
+            // Test CharacterController climbing up the stairs from ground to 2nd floor
+            CharacterController pCc = player.GetComponent<CharacterController>();
+            pCc.enabled = false;
+            // Đặt người chơi tại chân cầu thang tầng 1 (local Z = -3.2, X = 4.6, Y = 0.25)
+            player.transform.position = new Vector3(4.6f, 0.35f, 56.8f);
+            pCc.enabled = true;
+            Physics.SyncTransforms();
+
+            // Cho nhân vật di chuyển tiến lên dốc cầu thang (hướng Z+)
+            for (int step = 0; step < 40; step++)
+            {
+                pCc.Move(new Vector3(0f, -0.1f, 0.22f));
+            }
+            Physics.SyncTransforms();
+
+            float finalClimbedY = player.transform.position.y;
+            Debug.Log("[SmokeTest] Player climbed stairs to Y=" + finalClimbedY.ToString("F2") + " (Target Floor 2 is ~3.55m)");
+            AssertTrue(finalClimbedY >= 3.2f, "Player must successfully climb to 2nd floor (Y >= 3.2m), got " + finalClimbedY);
+
+            // 8. Test Minimap Tactical Texture Generation
+            TacticalMapRenderer.EnsureMapTexture();
+
+            // 9. Clean up test objects
             MaterialPool.SafeDestroy(testTree);
             MaterialPool.SafeDestroy(testRock);
             MaterialPool.SafeDestroy(testHouse);
 
-            // 8. Test AirDrop & BlueZone cleanup on GoToLobby
+            // 10. Test AirDrop & BlueZone cleanup on GoToLobby
             AirDropManager.Instance.SpawnSupplyCrate();
             AssertTrue(AirDropManager.ActiveAirDropLocations.Count == 1, "AirDrop should be tracked");
 
             MatchManager.Instance.GoToLobby();
             AssertTrue(!BlueZoneController.Instance.IsZoneActive, "BlueZone should be inactive in Lobby");
             AssertTrue(AirDropManager.ActiveAirDropLocations.Count == 0, "AirDrops should be cleared in Lobby");
+
+            // 11. Test Lobby Hero Stage & Character Switch
+            MatchManager.Instance.RefreshLobbyHeroCharacter("Stan", 2);
+            MatchManager.Instance.RefreshLobbyHeroCharacter("Leela", 1);
+            MatchManager.Instance.RefreshLobbyHeroCharacter("George", 0);
 
             // Clean up runtime test objects before saving scene
             GameObject island = GameObject.Find("BattleRoyaleIsland");
